@@ -54,10 +54,14 @@ static public class NGUITools
 	{
 		get
 		{
-			return Application.platform != RuntimePlatform.WindowsWebPlayer &&
+#if UNITY_5_5_OR_NEWER
+			return true;
+#else
+return Application.platform != RuntimePlatform.WindowsWebPlayer &&
 				Application.platform != RuntimePlatform.OSXWebPlayer;
-		}
-	}
+#endif
+        }
+    }
 
 	/// <summary>
 	/// Play the specified audio clip.
@@ -107,7 +111,7 @@ static public class NGUITools
 
 			if (mListener != null && mListener.enabled && NGUITools.GetActive(mListener.gameObject))
 			{
-				AudioSource source = mListener.audio;
+				AudioSource source = mListener.GetComponent<AudioSource>();
 				if (source == null) source = mListener.gameObject.AddComponent<AudioSource>();
 				source.pitch = pitch;
 				source.PlayOneShot(clip, volume);
@@ -375,13 +379,13 @@ static public class NGUITools
 			if (w != null)
 			{
 				Vector3[] corners = w.localCorners;
-				box.center = Vector3.Lerp(corners[0], corners[2], 0.5f);
+				box.offset = Vector3.Lerp(corners[0], corners[2], 0.5f);
 				box.size = corners[2] - corners[0];
 			}
 			else
 			{
 				Bounds b = NGUIMath.CalculateRelativeWidgetBounds(go.transform, considerInactive);
-				box.center = b.center;
+				box.offset = b.center;
 				box.size = new Vector2(b.size.x, b.size.y);
 			}
 #if UNITY_EDITOR
@@ -543,7 +547,7 @@ static public class NGUITools
 			for (int i = 0, imax = widgets.Length; i < imax; ++i)
 			{
 				UIWidget w = widgets[i];
-				if (w.cachedGameObject != go && (w.collider != null || w.GetComponent<Collider2D>() != null)) continue;
+				if (w.cachedGameObject != go && (w.GetComponent<Collider>() != null || w.GetComponent<Collider2D>() != null)) continue;
 				depth = Mathf.Max(depth, w.depth);
 			}
 			return depth + 1;
@@ -719,7 +723,7 @@ static public class NGUITools
 		{
 			UICamera cam = root.GetComponentInChildren<UICamera>();
 
-			if (cam != null && cam.camera.isOrthoGraphic == advanced3D)
+			if (cam != null && cam.GetComponent<Camera>().orthographic == advanced3D)
 			{
 				trans = null;
 				root = null;
